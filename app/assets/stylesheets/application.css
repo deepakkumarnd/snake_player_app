@@ -8,3 +8,28 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+
+.snake-board {
+    border: solid 1px #ccc;
+    width: fit-content;
+
+    .cell {
+        width: 30px;
+        height: 30px;
+        box-sizing: border-box;
+        border: solid 1px #ccc;
+    }
+
+    .food {
+        background-color: red;
+    }
+
+    .head {
+        background-color: darkgreen;
+    }
+
+    .tail {
+        background-color: green;
+    }
+}
