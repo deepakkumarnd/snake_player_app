@@ -3,7 +3,10 @@
   <div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
     <div id="board" class="snake-board"></div>
     <p>
-      <button data-action="click->snake#moveLeft"><</button>
+      <button data-action="click->snake#moveLeft">L</button>
+      <button data-action="click->snake#moveRight">R</button>
+      <button data-action="click->snake#moveUp">U</button>
+      <button data-action="click->snake#moveDown">D</button>
     </p>
   </div>
 </p>

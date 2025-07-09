@@ -14,6 +14,10 @@ export default class extends Controller {
     HEAD = 2;
     TAIL = 1
     EMPTY = 0;
+    LEFT = Object.freeze([0, -1])
+    RIGHT = Object.freeze([0, 1])
+    UP = Object.freeze([-1, 0])
+    DOWN = Object.freeze([1, 0])
 
     connect() {
         console.log("Snake game loaded");
@@ -22,57 +26,97 @@ export default class extends Controller {
         const rows = parseInt(data.rows);
         const cols = parseInt(data.cols);
 
-        let food_at = this.randomPosition(rows, cols);
-        let head_at = this.randomPosition(rows, cols);
-
-        while (this.arraysEqual(food_at, head_at)) {
-            head_at = this.randomPosition(rows, cols);
-        }
-
+        // initialize the grid
         const grid = [];
         for (let i = 0; i < rows; i++) {
             grid[i] = [];
             for (let j = 0; j < cols; j++) {
-                if (this.arraysEqual([i, j], food_at)) {
-                    grid[i][j] = this.FOOD;
-                } else if (this.arraysEqual([i, j], head_at)) {
-                    grid[i][j] = this.HEAD;
-                } else {
-                    grid[i][j] = this.EMPTY;
-                }
+                grid[i][j] = this.EMPTY;
             }
         }
-
         this.grid = grid;
-        this.head_at = head_at;
+
+        let food_at = this.randomPosition();
+        this.setCell(...food_at, this.FOOD);
+        let head_at = this.randomPosition();
+        this.setCell(...head_at, this.HEAD);
+
         this.food_at = food_at;
         this.rows = rows;
         this.cols = cols;
+        this.tails = [head_at];
+        this.head_at = this.tails[0];
         this.renderGrid("board", rows, cols);
     }
 
-    moveLeft() {
-        const left_at = [this.head_at[0], this.head_at[1] - 1]
+    move(direction) {
+        const move_at = [this.head_at[0] + direction[0], this.head_at[1] + direction[1]]
 
-        console.log(left_at)
+        const bound_text = ['', 'left', 'right', 'top', 'bottom']
 
-        if (left_at[1] < 0) {
-            console.log("Hit the left boundary");
-        } else if (this.isTail(...left_at)) {
+        console.log(move_at)
+        const boundary = this.isBoundary(...move_at)
+
+        if (boundary) {
+            console.log(`Hit the ${bound_text[boundary]} boundary`);
+        } else if (this.isTail(...move_at)) {
             console.log("Hit tail");
-        } else if (this.isFood(...left_at)) {
+        } else if (this.isFood(...move_at)) {
+            this.eatFood(...move_at);
             console.log("Eat food");
-        } else if (this.isEmpty(...left_at)) {
-            console.log("Move left ok");
-            this.setCell(...this.head_at, this.EMPTY);
-            this.head_at = left_at;
-            this.setCell(...this.head_at, this.HEAD);
+            this.placeFood();
+        } else if (this.isEmpty(...move_at)) {
+            console.log(`Move ${bound_text[boundary]} ok`);
+            this.moveSnake(...move_at)
         }
 
-        if (this.arraysEqual(this.head_at, left_at)) {
+        if (this.arraysEqual(this.head_at, move_at)) {
             console.log("Redraw grid");
             this.renderGrid("board", this.rows, this.cols);
         }
+    }
+
+    moveSnake(x, y) {
+        this.tails.unshift([x, y]);
+        const tail_cell = this.tails.pop();
+        this.setCell(...tail_cell, this.EMPTY);
+
+        for (let i = 0; i < this.tails.length; i++) {
+            this.setCell(...this.tails[i], this.TAIL);
+        }
+
+        this.head_at = this.tails[0];
+        this.setCell(...this.head_at, this.HEAD);
+    }
+
+    eatFood(x, y) {
+        this.setCell(...this.head_at, this.TAIL);
+        this.tails.unshift([x, y]);
+        this.head_at = this.tails[0];
+        this.setCell(...this.head_at, this.HEAD);
+    }
+
+    moveLeft() {
+        this.move(this.LEFT);
+    }
+
+    moveRight() {
+        this.move(this.RIGHT);
+    }
+
+    moveUp() {
+        this.move(this.UP);
+    }
+
+    moveDown() {
+        this.move(this.DOWN);
+    }
+
+    placeFood() {
+        const food_at = this.randomPosition();
+        this.setCell(...food_at, this.FOOD);
+        this.food_at = food_at;
+
     }
 
     renderGrid(container, rows = 8, cols = 8, size = 30) {
@@ -128,8 +172,25 @@ export default class extends Controller {
         return this.grid[x][y] === this.EMPTY;
     }
 
-    randomPosition(rows, cols) {
-        return [this.randomIndex(rows), this.randomIndex(cols)];
+    isBoundary(x, y) {
+        if (y < 0) return 1
+        else if (y >= this.cols) return 2
+        else if (x < 0) return 3
+        else if (x >= this.rows) return 4
+        else return 0
+    }
+
+    randomPosition() {
+        const empty_cells = []
+        this.grid.forEach((row, i) => {
+            row.forEach((cell, j) => {
+                if (cell === this.EMPTY) {
+                    empty_cells.push([i, j]);
+                }
+            })
+        });
+
+        return empty_cells[this.randomIndex(empty_cells.length)];
     }
 
     randomIndex(limit) {
