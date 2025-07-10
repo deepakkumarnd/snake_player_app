@@ -5,9 +5,7 @@ export default class extends Controller {
     static targets = [
         'rows',
         'cols',
-        'food',
-        'head',
-        'tail'
+        'board'
     ];
 
     FOOD = 3;
@@ -21,6 +19,10 @@ export default class extends Controller {
 
     connect() {
         console.log("Snake game loaded");
+        this.initBoard()
+    }
+
+    initBoard() {
         const el = this.element;
         const data = el.dataset;
         const rows = parseInt(data.rows);
@@ -46,7 +48,7 @@ export default class extends Controller {
         this.cols = cols;
         this.tails = [head_at];
         this.head_at = this.tails[0];
-        this.renderGrid("board", rows, cols);
+        this.renderGrid(this.boardTarget, this.rows, this.cols);
     }
 
     move(direction) {

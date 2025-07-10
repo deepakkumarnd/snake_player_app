@@ -1,16 +1,12 @@
 <h1>Snake Game</h1>
-<p>
-  <div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
-    <div id="board" class="snake-board"></div>
-    <p>
-      <button data-action="click->snake#moveLeft">L</button>
-      <button data-action="click->snake#moveRight">R</button>
-      <button data-action="click->snake#moveUp">U</button>
-      <button data-action="click->snake#moveDown">D</button>
-    </p>
-  </div>
-</p>
 
-<p>
-  <%= button_to 'Start' %>
-</p>
+<div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
+  <div class="snake-board" id="board" data-snake-target="board"></div>
+  <p>
+    <button data-action="click->snake#moveLeft">L</button>
+    <button data-action="click->snake#moveRight">R</button>
+    <button data-action="click->snake#moveUp">U</button>
+    <button data-action="click->snake#moveDown">D</button>
+  </p>
+  <button data-action="snake#initBoard">Reset</button>
+</div>
