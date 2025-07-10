@@ -5,7 +5,8 @@ export default class extends Controller {
     static targets = [
         'rows',
         'cols',
-        'board'
+        'board',
+        'output'
     ];
 
     FOOD = 3;
@@ -18,7 +19,7 @@ export default class extends Controller {
     DOWN = Object.freeze([1, 0])
 
     connect() {
-        console.log("Snake game loaded");
+        this.log("Snake game loaded");
         this.initBoard()
     }
 
@@ -49,26 +50,29 @@ export default class extends Controller {
         this.tails = [head_at];
         this.head_at = this.tails[0];
         this.renderGrid(this.boardTarget, this.rows, this.cols);
+        this.log('Starting new game')
+    }
+
+    clearOutput() {
+        this.outputTarget.innerHTML = '';
     }
 
     move(direction) {
         const move_at = [this.head_at[0] + direction[0], this.head_at[1] + direction[1]]
-
         const bound_text = ['', 'left', 'right', 'top', 'bottom']
-
-        console.log(move_at)
         const boundary = this.isBoundary(...move_at)
 
         if (boundary) {
-            console.log(`Hit the ${bound_text[boundary]} boundary`);
+            this.log(`Hit the ${bound_text[boundary]} boundary. Game over`);
+            this.initBoard();
         } else if (this.isTail(...move_at)) {
-            console.log("Hit tail");
+            this.log("Hit tail. Game over!");
+            this.initBoard();
         } else if (this.isFood(...move_at)) {
             this.eatFood(...move_at);
-            console.log("Eat food");
+            this.log("Eat food");
             this.placeFood();
         } else if (this.isEmpty(...move_at)) {
-            console.log(`Move ${bound_text[boundary]} ok`);
             this.moveSnake(...move_at)
         }
 
@@ -119,6 +123,12 @@ export default class extends Controller {
         this.setCell(...food_at, this.FOOD);
         this.food_at = food_at;
 
+    }
+
+    log(message) {
+        const div = document.createElement('div');
+        div.textContent = message
+        this.outputTarget.appendChild(div);
     }
 
     renderGrid(container, rows = 8, cols = 8, size = 30) {
