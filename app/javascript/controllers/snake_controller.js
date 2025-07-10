@@ -17,10 +17,23 @@ export default class extends Controller {
     RIGHT = Object.freeze([0, 1])
     UP = Object.freeze([-1, 0])
     DOWN = Object.freeze([1, 0])
+    AT_REST = Object.freeze([0, 0]);
 
     connect() {
         this.log("Snake game loaded");
-        this.initBoard()
+        this.restartGame();
+    }
+
+    startInterval() {
+        this.intervalFunc = setInterval(() => {
+            if (this.gameStarted) {
+                this.move(this.direction);
+            }
+        }, 1000)
+    }
+
+    stopInterval() {
+        clearInterval(this.intervalFunc)
     }
 
     initBoard() {
@@ -53,21 +66,32 @@ export default class extends Controller {
         this.log('Starting new game')
     }
 
+    restartGame() {
+        this.gameStarted = false;
+        this.direction = this.AT_REST
+        this.stopInterval();
+        this.initBoard();
+        this.startInterval();
+    }
+
     clearOutput() {
         this.outputTarget.innerHTML = '';
     }
 
     move(direction) {
+        this.gameStarted = true;
+        this.direction = direction;
+
         const move_at = [this.head_at[0] + direction[0], this.head_at[1] + direction[1]]
         const bound_text = ['', 'left', 'right', 'top', 'bottom']
         const boundary = this.isBoundary(...move_at)
 
         if (boundary) {
             this.log(`Hit the ${bound_text[boundary]} boundary. Game over`);
-            this.initBoard();
+            this.restartGame();
         } else if (this.isTail(...move_at)) {
             this.log("Hit tail. Game over!");
-            this.initBoard();
+            this.restartGame();
         } else if (this.isFood(...move_at)) {
             this.eatFood(...move_at);
             this.log("Eat food");
@@ -103,19 +127,23 @@ export default class extends Controller {
     }
 
     moveLeft() {
-        this.move(this.LEFT);
+        this.gameStarted = true;
+        this.direction = this.LEFT;
     }
 
     moveRight() {
-        this.move(this.RIGHT);
+        this.gameStarted = true;
+        this.direction = this.RIGHT;
     }
 
     moveUp() {
-        this.move(this.UP);
+        this.gameStarted = true;
+        this.direction = this.UP;
     }
 
     moveDown() {
-        this.move(this.DOWN);
+        this.gameStarted = true;
+        this.direction = this.DOWN;
     }
 
     placeFood() {
@@ -176,6 +204,7 @@ export default class extends Controller {
     isFood(x, y) {
         return this.grid[x][y] === this.FOOD;
     }
+
     isTail(x, y) {
         return this.grid[x][y] === this.TAIL;
     }
