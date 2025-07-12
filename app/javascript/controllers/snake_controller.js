@@ -13,14 +13,23 @@ export default class extends Controller {
     HEAD = 2;
     TAIL = 1
     EMPTY = 0;
+
+    MOVE_LEFT = 1;
+    MOVE_RIGHT = 2;
+    MOVE_UP = 3;
+    MOVE_DOWN = 4;
+
     LEFT = Object.freeze([0, -1])
     RIGHT = Object.freeze([0, 1])
     UP = Object.freeze([-1, 0])
     DOWN = Object.freeze([1, 0])
     AT_REST = Object.freeze([0, 0]);
+    GAME_NEXT_MOVE_API_PATH = '/games/next-move'
+    ERROR_THRESHOLD = 10;
 
     connect() {
         this.log("Snake game loaded");
+        this.AIPlayer = false;
         this.restartGame();
     }
 
@@ -29,7 +38,70 @@ export default class extends Controller {
             if (this.gameStarted) {
                 this.move(this.direction);
             }
+
+            if (this.AIPlayer) {
+                this.getNextMove()
+                    .then((response) => {
+                        if(response.success) {
+                            if (response.direction === this.MOVE_LEFT) this.direction = this.LEFT;
+                            else if (response.direction === this.MOVE_RIGHT) this.direction = this.RIGHT;
+                            else if (response.direction === this.MOVE_UP) this.direction = this.UP;
+                            else if (response.direction === this.MOVE_DOWN) this.direction = this.DOWN;
+                            else {
+                                this.errorCount += 1
+                            }
+                        } else {
+                            this.errorCount += 1
+                        }
+                    }).catch((error) => console.log(`Error something went wrong ${error}`))
+            }
         }, 1000)
+    }
+
+    async getNextMove() {
+        let api_response = {};
+        const csrfToken = document.querySelector('[name="csrf-token"]').content;
+
+        try {
+            console.log(this.grid);
+            const response = await fetch(this.GAME_NEXT_MOVE_API_PATH, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ grid: this.grid })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            api_response = await response.json();
+            api_response.success = true
+        } catch (error) {
+            this.errorCount += 1
+
+            if (this.errorCount > this.ERROR_THRESHOLD) {
+                console.log("Error threshold reached, there seems to be error in connectivity or api response. Stopping the game.")
+                this.stopInterval();
+            }
+            console.error('Fetch error:', error.message);
+            api_response = { success: false }
+        }
+
+        return api_response;
+    }
+
+    aiPlayerMode() {
+        this.log("Turn on AI player mode")
+        this.AIPlayer = true;
+    }
+
+    manualPlayerMode() {
+        this.log("Turn off AI player mode")
+        this.AIPlayer = false;
     }
 
     stopInterval() {
@@ -67,6 +139,7 @@ export default class extends Controller {
     }
 
     restartGame() {
+        this.errorCount = 0;
         this.gameStarted = false;
         this.direction = this.AT_REST
         this.stopInterval();
