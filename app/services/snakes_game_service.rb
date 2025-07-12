@@ -24,7 +24,6 @@ class SnakesGameService
       return nil
     end
 
-    Rails.logger.info "$$$$$$$$$$$$$$$ move #{move[:direction]}"
     move[:direction]
   end
 
