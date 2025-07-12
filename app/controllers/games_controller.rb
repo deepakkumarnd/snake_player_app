@@ -1,14 +1,12 @@
 class GamesController < ApplicationController
   def index
-    @game_board = SnakeBoard.new(
-      rows: 8,
-      cols: 8,
-      food: Position.new(3, 3),
-                head: Position.new(6,2), tails: [Position.new(6,1)])
+    @game_board = SnakeBoard.empty_grid(rows: 8, cols: 8)
   end
 
   def next_move
-    current_state = params[:grid]
-    render json: { direction: rand(1..4) }
+    board = SnakeBoard.from_array(params[:grid])
+    service = SnakesGameService.new(board)
+    direction = service.next_move
+    render json: { direction: direction }
   end
 end

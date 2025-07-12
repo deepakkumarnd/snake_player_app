@@ -63,7 +63,6 @@ export default class extends Controller {
         const csrfToken = document.querySelector('[name="csrf-token"]').content;
 
         try {
-            console.log(this.grid);
             const response = await fetch(this.GAME_NEXT_MOVE_API_PATH, {
                 method: 'POST',
                 headers: {
@@ -240,7 +239,7 @@ export default class extends Controller {
         // Clear any previous content
         el.innerHTML = '';
 
-        // Configure CSS Grid on the container
+        // Configure CSS SnakeBo on the container
         Object.assign(el.style, {
             display: 'grid',
             gridTemplateRows: `repeat(${rows}, ${size}px)`,
