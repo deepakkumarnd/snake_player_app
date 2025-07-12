@@ -5,7 +5,8 @@ require 'uri'
 class SnakesGameService
 
   VALID_MOVES = [1, 2, 3, 4]
-  UPSTREAM_SERVICE = "http://localhost:4000/snakes/next-move"
+  UPSTREAM_SERVICE = "http://localhost:8000/snakes/next-move"
+
   def initialize(snake_board)
     @snake_board = snake_board
   end
@@ -23,7 +24,8 @@ class SnakesGameService
       return nil
     end
 
-    move
+    Rails.logger.info "$$$$$$$$$$$$$$$ move #{move[:direction]}"
+    move[:direction]
   end
 
   private
@@ -49,7 +51,8 @@ class SnakesGameService
         return {} if response.body.nil? || response.body.empty?
 
         # Parse the JSON response body into a Ruby hash
-        JSON.parse(response.body)
+        parsed_response = JSON.parse(response.body)
+        parsed_response.symbolize_keys
       else
         # Handle non-successful HTTP statuses (like 404, 500, etc.)
         Rails.logger.error "Error: Received a non-successful HTTP status."
@@ -69,5 +72,4 @@ class SnakesGameService
       nil
     end
   end
-
 end

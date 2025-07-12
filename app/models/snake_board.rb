@@ -27,7 +27,7 @@ class SnakeBoard
   end
 
   def to_json
-    @grid.to_json
+    { grid: @grid }.to_json
   end
 
   private_class_method :new
