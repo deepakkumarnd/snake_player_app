@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   resources :games, only: [:index] do
     collection do
       post :next_move, path: "next-move"
+      post :feedback
     end
   end
 

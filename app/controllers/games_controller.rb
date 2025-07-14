@@ -9,4 +9,11 @@ class GamesController < ApplicationController
     direction = service.next_move
     render json: { direction: direction }
   end
+
+  def feedback
+    board = SnakeBoard.from_array(params[:grid])
+    service = SnakesGameService.new(board)
+    service.feedback(params[:outcome])
+    render json: {}
+  end
 end

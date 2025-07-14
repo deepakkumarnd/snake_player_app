@@ -1,8 +1,13 @@
-require 'net/http'
-require 'json'
-require 'uri'
+require "net/http"
+require "json"
+require "uri"
 
 class SnakesGameService
+
+  HIT_BOUNDARY = "hit_wall";
+  HIT_TAIL = "hit_tail";
+  EAT_FOOD = "eat_food";
+  MOVE_OK = "move_ok";
 
   VALID_MOVES = [1, 2, 3, 4]
   UPSTREAM_SERVICE = "http://localhost:8000/snakes/next-move"
@@ -27,6 +32,21 @@ class SnakesGameService
     move[:direction]
   end
 
+  def feedback(outcome)
+    case outcome
+    when HIT_TAIL
+      Rails.logger.info("HIT_ON_TAIL")
+    when HIT_BOUNDARY
+      Rails.logger.info("HIT_ON_WALL")
+    when EAT_FOOD
+      Rails.logger.info("EAT_FOOD")
+    when MOVE_OK
+      Rails.logger.info("MOVE_OK")
+    else
+      raise "Illegal outcome #{outcome}"
+    end
+  end
+
   private
 
   def get_next_move
@@ -34,8 +54,8 @@ class SnakesGameService
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
 
-    request['Content-Type'] = 'application/json'
-    request['Accept'] = 'application/json'
+    request["Content-Type"] = "application/json"
+    request["Accept"] = "application/json"
 
     # Convert the Ruby hash into a JSON string for the request body
     request.body = @snake_board.to_json

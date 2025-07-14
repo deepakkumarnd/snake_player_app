@@ -25,7 +25,13 @@ export default class extends Controller {
     DOWN = Object.freeze([1, 0])
     AT_REST = Object.freeze([0, 0]);
     GAME_NEXT_MOVE_API_PATH = '/games/next-move'
+    GAME_FEEDBACK_API_PATH = '/games/feedback'
     ERROR_THRESHOLD = 10;
+
+    HIT_BOUNDARY = 'hit_wall';
+    HIT_TAIL = 'hit_tail';
+    EAT_FOOD = 'eat_food';
+    MOVE_OK = 'move_ok';
 
     connect() {
         this.log("Snake game loaded");
@@ -43,6 +49,8 @@ export default class extends Controller {
                 this.getNextMove()
                     .then((response) => {
                         if(response.success) {
+                            this.gameStarted = true;
+
                             if (response.direction === this.MOVE_LEFT) this.direction = this.LEFT;
                             else if (response.direction === this.MOVE_RIGHT) this.direction = this.RIGHT;
                             else if (response.direction === this.MOVE_UP) this.direction = this.UP;
@@ -59,18 +67,29 @@ export default class extends Controller {
     }
 
     async getNextMove() {
+        const data = { grid: this.grid }
+        return this.makeApiCall(this.GAME_NEXT_MOVE_API_PATH, data);
+    }
+
+    async sendFeedback(outcome) {
+        const data = { grid: this.grid, outcome: outcome }
+        this.makeApiCall(this.GAME_FEEDBACK_API_PATH, data)
+            .then(r => {});
+    }
+
+    async makeApiCall(path, data) {
         let api_response = {};
         const csrfToken = document.querySelector('[name="csrf-token"]').content;
 
         try {
-            const response = await fetch(this.GAME_NEXT_MOVE_API_PATH, {
+            const response = await fetch(path, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-Token': csrfToken
                 },
-                body: JSON.stringify({ grid: this.grid })
+                body: JSON.stringify(data)
             });
 
             if (!response.ok) {
@@ -159,16 +178,20 @@ export default class extends Controller {
         const boundary = this.isBoundary(...move_at)
 
         if (boundary) {
+            this.sendFeedback(this.HIT_BOUNDARY);
             this.log(`Hit the ${bound_text[boundary]} boundary. Game over`);
             this.restartGame();
         } else if (this.isTail(...move_at)) {
+            this.sendFeedback(this.HIT_TAIL);
             this.log("Hit tail. Game over!");
             this.restartGame();
         } else if (this.isFood(...move_at)) {
+            this.sendFeedback(this.EAT_FOOD);
             this.eatFood(...move_at);
             this.log("Eat food");
             this.placeFood();
         } else if (this.isEmpty(...move_at)) {
+            this.sendFeedback(this.MOVE_OK)
             this.moveSnake(...move_at)
         }
 
