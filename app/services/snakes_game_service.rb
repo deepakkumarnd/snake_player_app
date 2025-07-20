@@ -10,7 +10,8 @@ class SnakesGameService
   MOVE_OK = "move_ok";
 
   VALID_MOVES = [1, 2, 3, 4]
-  UPSTREAM_SERVICE = "http://localhost:8000/snakes/next-move"
+  UPSTREAM_SERVICE_NEXT_MOVE = "http://localhost:8000/snakes/next-move"
+  UPSTREAM_SERVICE_FEEDBACK = "http://localhost:8000/snakes/feedback"
 
   def initialize(snake_board)
     @snake_board = snake_board
@@ -35,13 +36,13 @@ class SnakesGameService
   def feedback(outcome)
     case outcome
     when HIT_TAIL
-      Rails.logger.info("HIT_ON_TAIL")
+      send_feedback(-10)
     when HIT_BOUNDARY
-      Rails.logger.info("HIT_ON_WALL")
+      send_feedback(-10)
     when EAT_FOOD
-      Rails.logger.info("EAT_FOOD")
+      send_feedback(10)
     when MOVE_OK
-      Rails.logger.info("MOVE_OK")
+      send_feedback(0)
     else
       raise "Illegal outcome #{outcome}"
     end
@@ -49,8 +50,18 @@ class SnakesGameService
 
   private
 
+  def send_feedback(reward)
+    request_body = @snake_board.to_json
+    send_request(UPSTREAM_SERVICE_FEEDBACK + "?reward=#{reward}", request_body)
+  end
+
   def get_next_move
-    uri = URI.parse(UPSTREAM_SERVICE)
+    request_body = @snake_board.to_json
+    send_request(UPSTREAM_SERVICE_NEXT_MOVE, request_body)
+  end
+
+  def send_request(url, request_body)
+    uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
 
@@ -58,7 +69,7 @@ class SnakesGameService
     request["Accept"] = "application/json"
 
     # Convert the Ruby hash into a JSON string for the request body
-    request.body = @snake_board.to_json
+    request.body = request_body
 
     # 4. Send the request and handle the response
     begin
