@@ -26,7 +26,7 @@ class SnakesGameService
     end
 
     unless VALID_MOVES.include?(move[:direction])
-      Rails.logger.error "Error from upstream connection, invalid move"
+      Rails.logger.error "Error from upstream connection, invalid move #{move[:direction]}"
       return nil
     end
 
