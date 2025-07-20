@@ -33,16 +33,16 @@ class SnakesGameService
     move[:direction]
   end
 
-  def feedback(outcome)
+  def feedback(move, outcome)
     case outcome
     when HIT_TAIL
-      send_feedback(-10)
+      send_feedback(move, -10)
     when HIT_BOUNDARY
-      send_feedback(-10)
+      send_feedback(move,-10)
     when EAT_FOOD
-      send_feedback(10)
+      send_feedback(move,10)
     when MOVE_OK
-      send_feedback(0)
+      send_feedback(move,0)
     else
       raise "Illegal outcome #{outcome}"
     end
@@ -50,9 +50,9 @@ class SnakesGameService
 
   private
 
-  def send_feedback(reward)
+  def send_feedback(move, reward)
     request_body = @snake_board.to_json
-    send_request(UPSTREAM_SERVICE_FEEDBACK + "?reward=#{reward}", request_body)
+    send_request(UPSTREAM_SERVICE_FEEDBACK + "?reward=#{reward}&move=#{move}", request_body)
   end
 
   def get_next_move

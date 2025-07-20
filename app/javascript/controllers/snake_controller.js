@@ -72,9 +72,24 @@ export default class extends Controller {
     }
 
     async sendFeedback(outcome) {
-        const data = { grid: this.grid, outcome: outcome }
+        let last_move = 0;
+
+        if(this.arraysEqual(this.direction, this.LEFT)) {
+            last_move = this.MOVE_LEFT;
+        } else if (this.arraysEqual(this.direction, this.RIGHT)) {
+            last_move = this.MOVE_RIGHT;
+        } else if (this.direction === this.UP) {
+            last_move = this.MOVE_UP;
+        } else if (this.direction === this.DOWN) {
+            last_move = this.MOVE_DOWN;
+        } else {
+            throw `Invalid last move ${this.direction}`
+        }
+
+        const data = { grid: this.grid, move: last_move, outcome: outcome }
         this.makeApiCall(this.GAME_FEEDBACK_API_PATH, data)
-            .then(r => {});
+            .then(r => {})
+            .catch((msg) => console.log(msg))
     }
 
     async makeApiCall(path, data) {
@@ -191,7 +206,7 @@ export default class extends Controller {
             this.log("Eat food");
             this.placeFood();
         } else if (this.isEmpty(...move_at)) {
-            this.sendFeedback(this.MOVE_OK)
+            this.sendFeedback(this.MOVE_OK);
             this.moveSnake(...move_at)
         }
 

@@ -13,7 +13,7 @@ class GamesController < ApplicationController
   def feedback
     board = SnakeBoard.from_array(params[:grid])
     service = SnakesGameService.new(board)
-    service.feedback(params[:outcome])
+    service.feedback(params[:move], params[:outcome])
     render json: {}
   end
 end
