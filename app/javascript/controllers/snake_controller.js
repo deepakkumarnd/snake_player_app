@@ -71,7 +71,7 @@ export default class extends Controller {
         return this.makeApiCall(this.GAME_NEXT_MOVE_API_PATH, data);
     }
 
-    async sendFeedback(outcome) {
+    async sendFeedback(old_grid_data, outcome) {
         let last_move = 0;
 
         if(this.arraysEqual(this.direction, this.LEFT)) {
@@ -86,7 +86,7 @@ export default class extends Controller {
             throw `Invalid last move ${this.direction}`
         }
 
-        const data = { grid: this.grid, move: last_move, outcome: outcome }
+        const data = { old_grid: JSON.parse(old_grid_data), grid: this.grid, move: last_move, outcome: outcome }
         this.makeApiCall(this.GAME_FEEDBACK_API_PATH, data)
             .then(r => {})
             .catch((msg) => console.log(msg))
@@ -192,22 +192,24 @@ export default class extends Controller {
         const bound_text = ['', 'left', 'right', 'top', 'bottom']
         const boundary = this.isBoundary(...move_at)
 
+        const old_grid = JSON.stringify(this.grid)
+
         if (boundary) {
-            this.sendFeedback(this.HIT_BOUNDARY);
             this.log(`Hit the ${bound_text[boundary]} boundary. Game over`);
             this.restartGame();
+            this.sendFeedback(old_grid, this.HIT_BOUNDARY);
         } else if (this.isTail(...move_at)) {
-            this.sendFeedback(this.HIT_TAIL);
             this.log("Hit tail. Game over!");
             this.restartGame();
+            this.sendFeedback(old_grid, this.HIT_TAIL);
         } else if (this.isFood(...move_at)) {
-            this.sendFeedback(this.EAT_FOOD);
             this.eatFood(...move_at);
             this.log("Eat food");
             this.placeFood();
+            this.sendFeedback(old_grid, this.EAT_FOOD);
         } else if (this.isEmpty(...move_at)) {
-            this.sendFeedback(this.MOVE_OK);
             this.moveSnake(...move_at)
+            this.sendFeedback(old_grid, this.MOVE_OK);
         }
 
         if (this.arraysEqual(this.head_at, move_at)) {

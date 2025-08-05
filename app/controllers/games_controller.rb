@@ -5,14 +5,15 @@ class GamesController < ApplicationController
 
   def next_move
     board = SnakeBoard.from_array(params[:grid])
-    service = SnakesGameService.new(board)
+    service = SnakesGameService.new(board, nil)
     direction = service.next_move
     render json: { direction: direction }
   end
 
   def feedback
-    board = SnakeBoard.from_array(params[:grid])
-    service = SnakesGameService.new(board)
+    current_grid = SnakeBoard.from_array(params[:grid])
+    prev_grid = SnakeBoard.from_array(params[:old_grid])
+    service = SnakesGameService.new(current_grid, prev_grid)
     service.feedback(params[:move], params[:outcome])
     render json: {}
   end

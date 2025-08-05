@@ -13,8 +13,9 @@ class SnakesGameService
   UPSTREAM_SERVICE_NEXT_MOVE = "http://localhost:8000/snakes/next-move"
   UPSTREAM_SERVICE_FEEDBACK = "http://localhost:8000/snakes/feedback"
 
-  def initialize(snake_board)
-    @snake_board = snake_board
+  def initialize(current, previous)
+    @snake_board = current
+    @prev_snake_board = previous
   end
 
   def next_move
@@ -36,13 +37,13 @@ class SnakesGameService
   def feedback(move, outcome)
     case outcome
     when HIT_TAIL
-      send_feedback(move, -10)
+      send_feedback(move, -10, true)
     when HIT_BOUNDARY
-      send_feedback(move,-10)
+      send_feedback(move,-10, true)
     when EAT_FOOD
-      send_feedback(move,10)
+      send_feedback(move,10, false)
     when MOVE_OK
-      send_feedback(move,0)
+      send_feedback(move,0, false)
     else
       raise "Illegal outcome #{outcome}"
     end
@@ -50,9 +51,16 @@ class SnakesGameService
 
   private
 
-  def send_feedback(move, reward)
-    request_body = @snake_board.to_json
-    send_request(UPSTREAM_SERVICE_FEEDBACK + "?reward=#{reward}&move=#{move}", request_body)
+  def send_feedback(move, reward, game_over)
+    request_body = {
+      current_grid: @snake_board.grid,
+      previous_grid: @prev_snake_board.grid,
+      game_over: game_over,
+      reward: reward,
+      move: move
+    }
+    
+    send_request(UPSTREAM_SERVICE_FEEDBACK, request_body.to_json)
   end
 
   def get_next_move
