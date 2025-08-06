@@ -26,6 +26,24 @@ class SnakeBoard
     end
   end
 
+  def position_of(item)
+    (0..rows).each do |i|
+      (0..cols).each do |j|
+        if grid[i][j] == item
+          return Position.new(i, j)
+        end
+      end
+    end
+  end
+
+  def head_position
+    position_of(HEAD)
+  end
+
+  def food_position
+    position_of(FOOD)
+  end
+
   def to_json
     { grid: @grid }.to_json
   end

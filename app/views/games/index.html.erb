@@ -1,7 +1,9 @@
 <h1>Snake Game</h1>
 <main>
   <div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
-    <aside data-snake-target="output" class="logs"></aside>
+    <aside data-snake-target="output" class="logs">
+      <div id='game-stats' class="logs">Stats</div>
+    </aside>
     <div class="snake-board" id="board" data-snake-target="board"></div>
     <p>
       <button data-action="click->snake#moveLeft">L</button>

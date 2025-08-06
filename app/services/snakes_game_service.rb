@@ -12,6 +12,7 @@ class SnakesGameService
   VALID_MOVES = [1, 2, 3, 4]
   UPSTREAM_SERVICE_NEXT_MOVE = "http://localhost:8000/snakes/next-move"
   UPSTREAM_SERVICE_FEEDBACK = "http://localhost:8000/snakes/feedback"
+  UPSTREAM_SERVICE_STATS = "http://localhost:8000/snakes/stats"
 
   def initialize(current, previous)
     @snake_board = current
@@ -43,10 +44,35 @@ class SnakesGameService
     when EAT_FOOD
       send_feedback(move, 10, false)
     when MOVE_OK
-      send_feedback(move, 0, false)
+      reward = distance(@prev_snake_board.food_position, @prev_snake_board.head_position) < distance(@snake_board.food_position, @snake_board.head_position) ? 1 : 0
+      send_feedback(move, reward, false)
     else
       raise "Illegal outcome #{outcome}"
     end
+  end
+
+  def stats
+    uri = URI.parse(UPSTREAM_SERVICE_STATS)
+    response = Net::HTTP.get_response(uri)
+
+    case response
+    when Net::HTTPSuccess
+      begin
+        JSON.parse(response.body)
+      rescue JSON::ParserError => e
+        puts "JSON parsing failed: #{e.message}"
+      end
+    else
+      puts "HTTP Error: #{response.code} #{response.message}"
+    end
+  rescue SocketError => e
+    puts "Network error: #{e.message}"
+  rescue StandardError => e
+    puts "Unexpected error: #{e.message}"
+  end
+
+  def distance(position1, position2)
+    Math.sqrt((position1.y_pos - position2.y_pos) ** 2 + (position1.x_pos - position2.x_pos) ** 2)
   end
 
   private
@@ -59,7 +85,7 @@ class SnakesGameService
       reward: reward,
       move: move
     }
-    
+
     send_request(UPSTREAM_SERVICE_FEEDBACK, request_body.to_json)
   end
 

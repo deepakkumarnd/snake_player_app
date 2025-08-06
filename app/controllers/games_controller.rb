@@ -17,4 +17,9 @@ class GamesController < ApplicationController
     service.feedback(params[:move], params[:outcome])
     render json: {}
   end
+
+  def stats
+    service = SnakesGameService.new(nil, nil)
+    @stats = service.stats
+  end
 end

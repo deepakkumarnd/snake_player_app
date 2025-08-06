@@ -26,6 +26,7 @@ export default class extends Controller {
     AT_REST = Object.freeze([0, 0]);
     GAME_NEXT_MOVE_API_PATH = '/games/next-move'
     GAME_FEEDBACK_API_PATH = '/games/feedback'
+    GAME_STATS_API_PATH = '/games/stats'
     ERROR_THRESHOLD = 10;
 
     HIT_BOUNDARY = 'hit_wall';
@@ -37,6 +38,19 @@ export default class extends Controller {
         this.log("Snake game loaded");
         this.AIPlayer = false;
         this.restartGame();
+
+        setInterval(() => this.updateStats(), 5000)
+    }
+
+    updateStats() {
+        fetch(this.GAME_STATS_API_PATH, {
+            method: 'GET',
+            headers: {
+                Accept: "text/vnd.turbo-stream.html",
+            }
+        }).then((response) => response.text())
+            .then((html) => Turbo.renderStreamMessage(html))
+            .catch((error) => console.error(error));
     }
 
     startInterval() {

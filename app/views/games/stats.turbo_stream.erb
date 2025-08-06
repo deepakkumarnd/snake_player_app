@@ -1,0 +1,12 @@
+<% if @stats.present? %>
+  <%= turbo_stream.update "game-stats" do %>
+    <div>
+      <div>
+        <span>Games</span>&nbsp;<span><%= @stats['games'] %></span>
+      </div>
+      <div>
+        <span>Avg Loss</span>&nbsp;<span><%= @stats['loss_avg'] %></span>
+      </div>
+    </div>
+  <% end %>
+<% end %>
