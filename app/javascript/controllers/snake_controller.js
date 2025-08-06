@@ -93,8 +93,6 @@ export default class extends Controller {
             outcome: outcome
         }
 
-        this.log(outcome)
-
         this.makeApiCall(this.GAME_FEEDBACK_API_PATH, data)
             .then(r => {})
             .catch((msg) => console.log(msg))
