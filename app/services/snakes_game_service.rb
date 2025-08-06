@@ -4,10 +4,10 @@ require "uri"
 
 class SnakesGameService
 
-  HIT_BOUNDARY = "hit_wall";
-  HIT_TAIL = "hit_tail";
-  EAT_FOOD = "eat_food";
-  MOVE_OK = "move_ok";
+  HIT_BOUNDARY = "hit_wall"
+  HIT_TAIL = "hit_tail"
+  EAT_FOOD = "eat_food"
+  MOVE_OK = "move_ok"
 
   VALID_MOVES = [1, 2, 3, 4]
   UPSTREAM_SERVICE_NEXT_MOVE = "http://localhost:8000/snakes/next-move"
@@ -39,11 +39,11 @@ class SnakesGameService
     when HIT_TAIL
       send_feedback(move, -10, true)
     when HIT_BOUNDARY
-      send_feedback(move,-10, true)
+      send_feedback(move, -10, true)
     when EAT_FOOD
-      send_feedback(move,10, false)
+      send_feedback(move, 10, false)
     when MOVE_OK
-      send_feedback(move,0, false)
+      send_feedback(move, 0, false)
     else
       raise "Illegal outcome #{outcome}"
     end
