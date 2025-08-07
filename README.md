@@ -1,24 +1,13 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This project depends on another project that run an AI agent.
 
-Things you may want to cover:
+First clone and run this https://github.com/deepakkumarnd/snake_player_agent agent on port 8000 before starting this application.
 
-* Ruby version
+Start the application by running
 
-* System dependencies
+$ rails db:setup
+$ bin/dev
 
-* Configuration
+After starting the project got to localhost:3000 and click "AI Player button" or play manually.
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
