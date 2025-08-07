@@ -40,9 +40,9 @@ class SnakesGameService
     when HIT_TAIL
       send_feedback(move, -10, true)
     when HIT_BOUNDARY
-      send_feedback(move, -20, true)
+      send_feedback(move, -10, true)
     when EAT_FOOD
-      send_feedback(move, 50, false)
+      send_feedback(move, 10, false)
     when MOVE_OK
       reward = compute_reward
       send_feedback(move, reward, false)
@@ -71,27 +71,57 @@ class SnakesGameService
     puts "Unexpected error: #{e.message}"
   end
 
-  def distance(position1, position2)
-    Math.sqrt((position1.y_pos - position2.y_pos) ** 2 + (position1.x_pos - position2.x_pos) ** 2)
-  end
-
   private
+
+  def man_distance(position1, position2)
+    (position1.y_pos - position2.y_pos).abs + (position1.x_pos - position2.x_pos).abs
+  end
 
   def compute_reward
     reward = 0
 
-    if moved_closer_in_same_row? || moved_closer_in_same_column?
-      reward = 10
-    elsif moved_away_in_same_row? || moved_closer_in_same_column?
-      reward = -10
-    elsif moved_closer_to_food?
-      reward = 5
-    elsif moved_away_from_food?
-      reward = -5
-    else
-    end
+    reward -= 1 if moving_towards_the_wall?
+    reward += 2 if moving_towards_the_food?
 
     reward
+  end
+
+  def moving_towards_the_wall?
+    # top, right, bottom, left distances from the wall
+    prev_distances_from_wall = [
+      @prev_snake_board.head_position.x_pos,
+      @prev_snake_board.cols - @prev_snake_board.head_position.y_pos - 1,
+      @prev_snake_board.rows - @prev_snake_board.head_position.x_pos - 1,
+      @prev_snake_board.head_position.y_pos
+    ]
+
+    shortest = prev_distances_from_wall.min
+
+    return false if shortest > 2
+
+    indices = prev_distances_from_wall.each_with_index.map do |distance, index|
+      index if distance == shortest
+    end.compact
+
+    curr_distances_from_wall = [
+      @snake_board.head_position.x_pos,
+      @snake_board.cols - @snake_board.head_position.y_pos - 1,
+      @snake_board.rows - @snake_board.head_position.x_pos - 1,
+      @snake_board.head_position.y_pos
+    ]
+
+    # moved closer to any of the wall
+    indices.map do |index|
+      curr_distances_from_wall[index] < shortest
+    end.any?
+  end
+
+  def moving_towards_the_food?
+    food_position = @snake_board.food_position
+    distance1 = man_distance(@prev_snake_board.head_position, food_position)
+    distance2 = man_distance(@snake_board.head_position, food_position)
+    Rails.logger.info("Distance #{distance1}, #{distance2}")
+    distance2 < distance1
   end
 
   def moved_closer_in_same_row?
