@@ -40,11 +40,11 @@ class SnakesGameService
     when HIT_TAIL
       send_feedback(move, -10, true)
     when HIT_BOUNDARY
-      send_feedback(move, -10, true)
+      send_feedback(move, -20, true)
     when EAT_FOOD
-      send_feedback(move, 10, false)
+      send_feedback(move, 50, false)
     when MOVE_OK
-      reward = distance(@prev_snake_board.food_position, @prev_snake_board.head_position) < distance(@snake_board.food_position, @snake_board.head_position) ? 1 : 0
+      reward = compute_reward
       send_feedback(move, reward, false)
     else
       raise "Illegal outcome #{outcome}"
@@ -76,6 +76,71 @@ class SnakesGameService
   end
 
   private
+
+  def compute_reward
+    reward = 0
+
+    if moved_closer_in_same_row? || moved_closer_in_same_column?
+      reward = 10
+    elsif moved_away_in_same_row? || moved_closer_in_same_column?
+      reward = -10
+    elsif moved_closer_to_food?
+      reward = 5
+    elsif moved_away_from_food?
+      reward = -5
+    else
+    end
+
+    reward
+  end
+
+  def moved_closer_in_same_row?
+    food_position = @snake_board.food_position
+    (@prev_snake_board.head_position.x_pos == @snake_board.head_position.x_pos) && (@snake_board.head_position.x_pos == food_position.x_pos) && moved_closer_to_food_horizontally?
+  end
+
+  def moved_away_in_same_row?
+    food_position = @snake_board.food_position
+    (@prev_snake_board.head_position.x_pos == @snake_board.head_position.x_pos) && (@snake_board.head_position.x_pos == food_position.x_pos) && moved_away_from_food_horizontally?
+  end
+
+  def moved_away_in_same_column?
+    food_position = @snake_board.food_position
+    (@prev_snake_board.head_position.y_pos == @snake_board.head_position.y_pos) && (@snake_board.head_position.y_pos == food_position.y_pos) && moved_away_from_food_vertically?
+  end
+
+  def moved_closer_in_same_column?
+    food_position = @snake_board.food_position
+    (@prev_snake_board.head_position.y_pos == @snake_board.head_position.y_pos) && (@snake_board.head_position.y_pos == food_position.y_pos) && moved_closer_to_food_vertically?
+  end
+
+  def moved_closer_to_food?
+    moved_closer_to_food_horizontally? || moved_closer_to_food_vertically?
+  end
+
+  def moved_away_from_food?
+    moved_away_from_food_horizontally? || moved_away_from_food_vertically?
+  end
+
+  def moved_away_from_food_horizontally?
+    food_position = @snake_board.food_position
+    (@snake_board.head_position.y_pos - food_position.y_pos).abs > (@prev_snake_board.head_position.y_pos - food_position.y_pos).abs
+  end
+
+  def moved_away_from_food_vertically?
+    food_position = @snake_board.food_position
+    (@snake_board.head_position.x_pos - food_position.x_pos).abs > (@prev_snake_board.head_position.x_pos - food_position.x_pos).abs
+  end
+
+  def moved_closer_to_food_horizontally?
+    food_position = @snake_board.food_position
+    (@snake_board.head_position.y_pos - food_position.y_pos).abs < (@prev_snake_board.head_position.y_pos - food_position.y_pos).abs
+  end
+
+  def moved_closer_to_food_vertically?
+    food_position = @snake_board.food_position
+    (@snake_board.head_position.x_pos - food_position.x_pos).abs < (@prev_snake_board.head_position.x_pos - food_position.x_pos).abs
+  end
 
   def send_feedback(move, reward, game_over)
     request_body = {

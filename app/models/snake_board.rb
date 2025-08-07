@@ -37,11 +37,11 @@ class SnakeBoard
   end
 
   def head_position
-    position_of(HEAD)
+    @head_position ||= position_of(HEAD)
   end
 
   def food_position
-    position_of(FOOD)
+    @food_position ||= position_of(FOOD)
   end
 
   def to_json
