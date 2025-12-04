@@ -1,5 +1,8 @@
 <h1>Snake Game</h1>
 <main>
+  <div>
+    <p>Game ID: <em><%= @game_id %></em></p>
+  </div>
   <div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
     <aside>
       <div id='game-stats' class="logs">Stats</div>

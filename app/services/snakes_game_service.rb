@@ -14,7 +14,8 @@ class SnakesGameService
   UPSTREAM_SERVICE_FEEDBACK = "http://localhost:8000/snakes/feedback"
   UPSTREAM_SERVICE_STATS = "http://localhost:8000/snakes/stats"
 
-  def initialize(current, previous)
+  def initialize(game_id, current, previous)
+    @game_id = game_id
     @snake_board = current
     @prev_snake_board = previous
   end
@@ -58,7 +59,9 @@ class SnakesGameService
     case response
     when Net::HTTPSuccess
       begin
-        JSON.parse(response.body)
+        obj = JSON.parse(response.body)
+        obj["game_id"] = @game_id
+        obj
       rescue JSON::ParserError => e
         puts "JSON parsing failed: #{e.message}"
       end
@@ -68,7 +71,7 @@ class SnakesGameService
   rescue SocketError => e
     puts "Network error: #{e.message}"
   rescue StandardError => e
-    puts "Unexpected error: #{e.message}"
+    puts "Unexpected upstream error: #{e.message}"
   end
 
   private
