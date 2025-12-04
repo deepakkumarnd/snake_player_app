@@ -47,9 +47,19 @@ export default class extends Controller {
             headers: {
                 Accept: "text/vnd.turbo-stream.html",
             }
-        }).then((response) => response.text())
-            .then((html) => Turbo.renderStreamMessage(html))
-            .catch((error) => console.error(error));
+        }).then((response) => {
+            if (response.success) {
+                this.errorCount2 = 0;
+                const html = response.text()
+                Turbo.renderStreamMessage(html)
+            } else {
+                this.errorCount2 += 1
+            }
+
+            if (this.errorCount2 > this.ERROR_THRESHOLD) {
+                this.stopGame("Unable to fetch stats");
+            }
+        }).catch((error) => console.error(error));
     }
 
     startInterval() {
@@ -68,25 +78,25 @@ export default class extends Controller {
                             else if (response.direction === this.MOVE_UP) this.direction = this.UP;
                             else if (response.direction === this.MOVE_DOWN) this.direction = this.DOWN;
                             else {
-                                this.errorCount += 1
+                                this.errorCount1 += 1
                             }
                         } else {
-                            this.errorCount += 1
+                            this.errorCount1 += 1
                         }
 
-                        if (this.errorCount > this.ERROR_THRESHOLD) {
+                        if (this.errorCount1 > this.ERROR_THRESHOLD) {
                             this.stopGame("Unable to fetch moves stopping game");
                         }
 
                     }).catch((error) => console.log(`Error something went wrong ${error}`))
             }
-        }, 1000)
+        }, 10000)
 
         this.fetchStatsIntervalFunc = setInterval(() => {
             if (this.gameStarted && this.AIPlayer) {
                 this.updateStats()
             }
-        }, 5000)
+        }, 50000)
     }
 
     async getNextMove() {
@@ -143,9 +153,9 @@ export default class extends Controller {
             api_response = await response.json();
             api_response.success = true
         } catch (error) {
-            this.errorCount += 1
+            this.errorCount1 += 1
 
-            if (this.errorCount > this.ERROR_THRESHOLD) {
+            if (this.errorCount2 > this.ERROR_THRESHOLD) {
                 console.log("Error threshold reached, there seems to be error in connectivity or api response. Stopping the game.")
                 this.stopGame("Error threshold reached, there seems to be error in connectivity or api response. Stopping the game.");
             }
@@ -214,7 +224,8 @@ export default class extends Controller {
     }
 
     startGame() {
-        this.errorCount = 0;
+        this.errorCount1 = 0;
+        this.errorCount2 = 0;
         this.gameStarted = true;
         this.direction = this.AT_REST;
         this.startInterval();
