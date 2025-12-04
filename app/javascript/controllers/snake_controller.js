@@ -6,7 +6,8 @@ export default class extends Controller {
         'rows',
         'cols',
         'board',
-        'output'
+        'output',
+        'actions'
     ];
 
     FOOD = 3;
@@ -37,9 +38,7 @@ export default class extends Controller {
     connect() {
         this.log("Snake game loaded");
         this.AIPlayer = false;
-        this.restartGame();
-
-        setInterval(() => this.updateStats(), 5000)
+        this.initBoard();
     }
 
     updateStats() {
@@ -54,7 +53,7 @@ export default class extends Controller {
     }
 
     startInterval() {
-        this.intervalFunc = setInterval(() => {
+        this.timeStepFunc = setInterval(() => {
             if (this.gameStarted) {
                 this.move(this.direction);
             }
@@ -63,7 +62,6 @@ export default class extends Controller {
                 this.getNextMove()
                     .then((response) => {
                         if(response.success) {
-                            this.gameStarted = true;
 
                             if (response.direction === this.MOVE_LEFT) this.direction = this.LEFT;
                             else if (response.direction === this.MOVE_RIGHT) this.direction = this.RIGHT;
@@ -75,9 +73,20 @@ export default class extends Controller {
                         } else {
                             this.errorCount += 1
                         }
+
+                        if (this.errorCount > this.ERROR_THRESHOLD) {
+                            this.stopGame("Unable to fetch moves stopping game");
+                        }
+
                     }).catch((error) => console.log(`Error something went wrong ${error}`))
             }
         }, 1000)
+
+        this.fetchStatsIntervalFunc = setInterval(() => {
+            if (this.gameStarted && this.AIPlayer) {
+                this.updateStats()
+            }
+        }, 5000)
     }
 
     async getNextMove() {
@@ -138,7 +147,7 @@ export default class extends Controller {
 
             if (this.errorCount > this.ERROR_THRESHOLD) {
                 console.log("Error threshold reached, there seems to be error in connectivity or api response. Stopping the game.")
-                this.stopInterval();
+                this.stopGame("Error threshold reached, there seems to be error in connectivity or api response. Stopping the game.");
             }
             console.error('Fetch error:', error.message);
             api_response = { success: false }
@@ -150,15 +159,18 @@ export default class extends Controller {
     aiPlayerMode() {
         this.log("Turn on AI player mode")
         this.AIPlayer = true;
+        this.restartGame();
     }
 
     manualPlayerMode() {
         this.log("Turn off AI player mode")
         this.AIPlayer = false;
+        this.restartGame();
     }
 
     stopInterval() {
-        clearInterval(this.intervalFunc)
+        clearInterval(this.timeStepFunc);
+        clearInterval(this.fetchStatsIntervalFunc);
     }
 
     initBoard() {
@@ -187,17 +199,41 @@ export default class extends Controller {
         this.cols = cols;
         this.tails = [head_at];
         this.head_at = this.tails[0];
-        this.renderGrid(this.boardTarget, this.rows, this.cols);
+        this.renderGrid(this.boardTarget, this.rows, this.cols); // stimulus target board
+        this.disableAction()
         this.log('Starting new game')
     }
 
-    restartGame() {
+
+    disableAction() {
+        this.actionsTargets.forEach((target) => target.disabled = true)
+    }
+
+    enableAction() {
+        this.actionsTargets.forEach((target) => target.disabled = false)
+    }
+
+    startGame() {
         this.errorCount = 0;
-        this.gameStarted = false;
-        this.direction = this.AT_REST
-        this.stopInterval();
-        this.initBoard();
+        this.gameStarted = true;
+        this.direction = this.AT_REST;
         this.startInterval();
+        this.initBoard();
+        if (!this.AIPlayer) {
+            this.enableAction();
+        }
+    }
+
+    stopGame(msg) {
+        this.log(msg);
+        this.gameStarted = false;
+        this.direction = this.AT_REST;
+        this.stopInterval();
+    }
+
+    restartGame() {
+        this.stopGame("Restarting game");
+        this.startGame();
     }
 
     clearOutput() {
