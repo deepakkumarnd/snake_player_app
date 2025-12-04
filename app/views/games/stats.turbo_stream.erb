@@ -1,6 +1,6 @@
-<% if @stats.present? %>
-  <%= turbo_stream.update "game-stats" do %>
-    <div>
+<%= turbo_stream.update "game-stats" do %>
+  <div>
+    <% if @stats.present? %>
       <div>
         <span>Game ID</span>&nbsp;<span><%= @stats['game_id'] %></span>
       </div>
@@ -16,17 +16,13 @@
       <div>
         <span>Epsilon</span>&nbsp;<span><%= @stats['epsilon'] %></span>
       </div>
-    </div>
-  <% end %>
-<% else %>
-  <%= turbo_stream.update "game-stats" do %>
-    <div>
+    <% else %>
       <div>
-        <span>Game ID</span>&nbsp;<span><%= session[:game_id] %></span>
+        <span>Game ID</span>&nbsp;<span><%= @game_id %></span>
       </div>
       <div>
         <span>Unable to fetch game stats</span>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 <% end %>

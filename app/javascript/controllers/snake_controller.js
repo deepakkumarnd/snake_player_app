@@ -47,19 +47,20 @@ export default class extends Controller {
             headers: {
                 Accept: "text/vnd.turbo-stream.html",
             }
-        }).then((response) => {
-            if (response.success) {
+        })
+            .then((response) => response.text())
+            .then((html) => {
                 this.errorCount2 = 0;
-                const html = response.text()
                 Turbo.renderStreamMessage(html)
-            } else {
-                this.errorCount2 += 1
-            }
+            })
+            .catch((error) => {
+                this.errorCount2 += 1;
+                console.error(error)
+            });
 
-            if (this.errorCount2 > this.ERROR_THRESHOLD) {
-                this.stopGame("Unable to fetch stats");
-            }
-        }).catch((error) => console.error(error));
+        if (this.errorCount2 > this.ERROR_THRESHOLD) {
+            this.stopGame("Unable to fetch stats");
+        }
     }
 
     startInterval() {
@@ -90,13 +91,13 @@ export default class extends Controller {
 
                     }).catch((error) => console.log(`Error something went wrong ${error}`))
             }
-        }, 10000)
+        }, 1000)
 
         this.fetchStatsIntervalFunc = setInterval(() => {
             if (this.gameStarted && this.AIPlayer) {
                 this.updateStats()
             }
-        }, 50000)
+        }, 10000)
     }
 
     async getNextMove() {

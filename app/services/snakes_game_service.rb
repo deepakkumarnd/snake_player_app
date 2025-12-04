@@ -63,15 +63,15 @@ class SnakesGameService
         obj["game_id"] = @game_id
         obj
       rescue JSON::ParserError => e
-        puts "JSON parsing failed: #{e.message}"
+        Rails.logger.error "JSON parsing failed: #{e.message}"
       end
     else
-      puts "HTTP Error: #{response.code} #{response.message}"
+      Rails.logger.error "HTTP Error: #{response.code} #{response.message}"
     end
   rescue SocketError => e
-    puts "Network error: #{e.message}"
+    Rails.logger.error "Network error: #{e.message}"
   rescue StandardError => e
-    puts "Unexpected upstream error: #{e.message}"
+    Rails.logger.error "Unexpected upstream error: #{e.message}"
   end
 
   private
