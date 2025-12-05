@@ -49,10 +49,8 @@ export default class extends Controller {
             }
         })
             .then((response) => response.text())
-            .then((html) => {
-                this.errorCount2 = 0;
-                Turbo.renderStreamMessage(html)
-            })
+            .then((html) => { Turbo.renderStreamMessage(html) })
+            .then(() => this.errorCount2 = 0)
             .catch((error) => {
                 this.errorCount2 += 1;
                 console.error(error)
