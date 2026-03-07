@@ -2,7 +2,7 @@ class GamesController < ApplicationController
 
   before_action :set_game_id, except: [:index]
   def index
-    @game_board = SnakeBoard.empty_grid(rows: 4, cols: 4)
+    @game_board = SnakeBoard.empty_grid(rows: 8, cols: 8)
     @game_id = session[:game_id] = SecureRandom.uuid
   end
 
