@@ -38,9 +38,7 @@ class SnakesGameService
 
   def feedback(move, outcome)
     case outcome
-    when HIT_TAIL
-      send_feedback(move, -10, true)
-    when HIT_BOUNDARY
+    when HIT_TAIL, HIT_BOUNDARY
       send_feedback(move, -10, true)
     when EAT_FOOD
       send_feedback(move, 10, false)
@@ -81,10 +79,15 @@ class SnakesGameService
   end
 
   def compute_reward
-    reward = 0
+    reward = 0.1
 
     reward -= 1 if moving_towards_the_wall?
-    reward += 2 if moving_towards_the_food?
+
+    if moving_towards_the_food?
+      reward += 2
+    elsif moving_away_from_food?
+      reward -= 1
+    end
 
     reward
   end
@@ -100,7 +103,7 @@ class SnakesGameService
 
     shortest = prev_distances_from_wall.min
 
-    return false if shortest > 2
+    return false if shortest > 4
 
     indices = prev_distances_from_wall.each_with_index.map do |distance, index|
       index if distance == shortest
@@ -127,30 +130,6 @@ class SnakesGameService
     distance2 < distance1
   end
 
-  def moved_closer_in_same_row?
-    food_position = @snake_board.food_position
-    (@prev_snake_board.head_position.x_pos == @snake_board.head_position.x_pos) && (@snake_board.head_position.x_pos == food_position.x_pos) && moved_closer_to_food_horizontally?
-  end
-
-  def moved_away_in_same_row?
-    food_position = @snake_board.food_position
-    (@prev_snake_board.head_position.x_pos == @snake_board.head_position.x_pos) && (@snake_board.head_position.x_pos == food_position.x_pos) && moved_away_from_food_horizontally?
-  end
-
-  def moved_away_in_same_column?
-    food_position = @snake_board.food_position
-    (@prev_snake_board.head_position.y_pos == @snake_board.head_position.y_pos) && (@snake_board.head_position.y_pos == food_position.y_pos) && moved_away_from_food_vertically?
-  end
-
-  def moved_closer_in_same_column?
-    food_position = @snake_board.food_position
-    (@prev_snake_board.head_position.y_pos == @snake_board.head_position.y_pos) && (@snake_board.head_position.y_pos == food_position.y_pos) && moved_closer_to_food_vertically?
-  end
-
-  def moved_closer_to_food?
-    moved_closer_to_food_horizontally? || moved_closer_to_food_vertically?
-  end
-
   def moved_away_from_food?
     moved_away_from_food_horizontally? || moved_away_from_food_vertically?
   end
@@ -163,16 +142,6 @@ class SnakesGameService
   def moved_away_from_food_vertically?
     food_position = @snake_board.food_position
     (@snake_board.head_position.x_pos - food_position.x_pos).abs > (@prev_snake_board.head_position.x_pos - food_position.x_pos).abs
-  end
-
-  def moved_closer_to_food_horizontally?
-    food_position = @snake_board.food_position
-    (@snake_board.head_position.y_pos - food_position.y_pos).abs < (@prev_snake_board.head_position.y_pos - food_position.y_pos).abs
-  end
-
-  def moved_closer_to_food_vertically?
-    food_position = @snake_board.food_position
-    (@snake_board.head_position.x_pos - food_position.x_pos).abs < (@prev_snake_board.head_position.x_pos - food_position.x_pos).abs
   end
 
   def send_feedback(move, reward, game_over)
