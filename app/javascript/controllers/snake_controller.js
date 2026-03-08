@@ -332,9 +332,13 @@ export default class extends Controller {
     }
 
     log(message) {
+        if (this.outputTarget.children.length >= 500) {
+            this.outputTarget.innerHTML = '';
+        }
         const div = document.createElement('div');
         div.textContent = message
         this.outputTarget.appendChild(div);
+        this.outputTarget.scrollTop = this.outputTarget.scrollHeight;
     }
 
     renderGrid(container, rows = 8, cols = 8, size = 30) {

@@ -38,4 +38,6 @@
     padding: 10px;
     font-family: monospace;
     font-size: 10px;
+    max-height: calc(100lh);
+    overflow-y: auto;
 }

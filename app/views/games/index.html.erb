@@ -6,7 +6,6 @@
   <div data-controller="snake" data-rows="<%= @game_board.rows %>" data-cols="<%= @game_board.cols %>">
     <aside>
       <div id='game-stats' class="logs">Stats</div>
-      <div data-snake-target="output" class="logs"></div>
     </aside>
     <div class="snake-board" id="board" data-snake-target="board"></div>
     <p>
@@ -20,6 +19,10 @@
       <button data-action="snake#manualPlayerMode">Manual Player</button>
       <button data-action="snake#restartGame">Reset</button>
       <button data-action="snake#clearOutput">Clear logs</button>
+    </div>
+    <div>
+      <p>Logs:</p>
+      <div data-snake-target="output" class="logs"></div>
     </div>
   </div>
 </main>
